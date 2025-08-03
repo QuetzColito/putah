@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	args := strings.Join(os.Args[1:], "") + ")"
+	args := strings.ToLower(strings.Join(os.Args[1:], "") + ")")
 	validate("(" + args)
 	var s scanner.Scanner
 	s.Init(strings.NewReader(args))
