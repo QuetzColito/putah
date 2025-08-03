@@ -5,8 +5,8 @@ import "math"
 type operator int
 
 const (
-	PLUS operator = iota
-	MINUS
+	MINUS operator = iota
+	PLUS
 	MULT
 	DIV
 	MOD
@@ -14,13 +14,12 @@ const (
 )
 
 var opmap map[string]operator = map[string]operator{
-	"+":  PLUS,
-	"-":  MINUS,
-	"*":  MULT,
-	"/":  DIV,
-	"%":  MOD,
-	"^":  POWER,
-	"**": POWER,
+	"-": MINUS,
+	"+": PLUS,
+	"*": MULT,
+	"/": DIV,
+	"%": MOD,
+	"^": POWER,
 }
 
 func readOperator(input string) operator {
@@ -65,6 +64,14 @@ const (
 	LOG function = iota
 	LN
 	LB
+	SQRT
+	SIN
+	ASIN
+	COS
+	ACOS
+	TAN
+	ATAN
+	ABS
 	INVERT
 )
 
@@ -75,7 +82,24 @@ var funcmap map[string]function = map[string]function{
 	"loge":  LN,
 	"lb":    LB,
 	"log2":  LB,
+	"sqrt":  SQRT,
+	"sin":   SIN,
+	"asin":  ASIN,
+	"cos":   COS,
+	"acos":  ASIN,
+	"tan":   TAN,
+	"atan":  ATAN,
+	"abs":   ABS,
 	"-":     INVERT,
+}
+
+func readFunction(input string) function {
+	op, ok := funcmap[input]
+	if ok {
+		return op
+	} else {
+		return -1
+	}
 }
 
 func (f *function) apply(a float64) float64 {
@@ -88,6 +112,22 @@ func (f *function) apply(a float64) float64 {
 		return math.Log2(a)
 	case INVERT:
 		return -a
+	case SQRT:
+		return math.Sqrt(a)
+	case SIN:
+		return math.Sin(a)
+	case ASIN:
+		return math.Asin(a)
+	case COS:
+		return math.Cos(a)
+	case ACOS:
+		return math.Acos(a)
+	case TAN:
+		return math.Tan(a)
+	case ATAN:
+		return math.Atan(a)
+	case ABS:
+		return math.Asin(a)
 	}
 	return a
 }

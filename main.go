@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -10,37 +11,73 @@ import (
 )
 
 func main() {
-	args := strings.Join(os.Args[1:], "")
-	validate(args)
+	args := strings.Join(os.Args[1:], "") + ")"
+	validate("(" + args)
 	var s scanner.Scanner
 	s.Init(strings.NewReader(args))
 
+	result, _ := parseParens(s)
+	fmt.Printf("result: %f\n", result)
+}
+
+func parseParens(s scanner.Scanner) (float64, scanner.Scanner) {
 	var root tree
 	var next *operation
-	expectExpression := true
-	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
-		switch {
-		case root == nil:
-			v, _ := strconv.ParseFloat(s.TokenText(), 64)
-			root = literal{v}
-		case next != nil:
-			v, _ := strconv.ParseFloat(s.TokenText(), 64)
-			if next.op == MINUS {
-				next.right = literal{-v}
-				next.op = PLUS
-			} else {
-				next.right = literal{v}
+	var functions []function
+	for tok := s.Scan(); tok != ')'; tok = s.Scan() {
+		token := s.TokenText()
+		fmt.Println(token)
+		if next != nil || root == nil {
+			// Read Expression
+			var value tree // stores the result of the Expression
+			switch {
+			case readOperator(token) > 0:
+				return math.NaN(), s
+			case token == "(":
+				var v float64
+				v, s = parseParens(s) // recurse
+				value = literal{v}
+			case !isNumber(token):
+				// Read Function
+				functions = append(functions, readFunction(token))
+				continue
+			default:
+				// Read Number
+				v, err := strconv.ParseFloat(token, 64)
+				if err != nil {
+					value = literal{0}
+				} else {
+					value = literal{v}
+				}
 			}
-			root = root.attach(*next)
-			next = nil
-		case next == nil:
-			op := readOperator(s.TokenText())
+
+			for i := len(functions) - 1; i >= 0; i-- {
+				value = application{op: functions[i], argument: value}
+			}
+			functions = nil
+
+			if root == nil {
+				root = value
+			} else {
+				if next.op == MINUS {
+					next.right = application{op: INVERT, argument: value}
+					next.op = PLUS
+				} else {
+					next.right = value
+				}
+				root = root.attach(*next)
+				next = nil
+			}
+		} else {
+			// Read Operator
+			op := readOperator(token)
+			if op < 0 {
+				return math.NaN(), s
+			}
 			next = &operation{op: op}
 		}
-		expectExpression = !expectExpression
 	}
-	root.print(0)
-	fmt.Printf("sum: %f\n", root.compute())
+	return root.compute(), s
 }
 
 func isNumber(token string) bool {

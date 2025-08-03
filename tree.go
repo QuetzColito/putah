@@ -42,7 +42,7 @@ func (o operation) print(offset int) {
 }
 
 type application struct {
-	argument *tree
+	argument tree
 	op       function
 }
 
@@ -52,7 +52,7 @@ func (a application) attach(t operation) tree {
 }
 
 func (a application) compute() float64 {
-	x := (*a.argument).compute()
+	x := a.argument.compute()
 	return a.op.apply(x)
 }
 
