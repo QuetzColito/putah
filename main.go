@@ -77,7 +77,11 @@ func parseParens(s scanner.Scanner) (float64, scanner.Scanner) {
 			next = &operation{op: op}
 		}
 	}
-	return root.compute(), s
+	if root == nil {
+		return math.NaN(), s
+	} else {
+		return root.compute(), s
+	}
 }
 
 func isNumber(token string) bool {
