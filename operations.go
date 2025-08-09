@@ -58,6 +58,12 @@ func (o operator) apply(a float64, b float64) float64 {
 	return a
 }
 
+var constants map[string]float64 = map[string]float64{
+	"pi":  math.Pi,
+	"phi": math.Phi,
+	"e":   math.E,
+}
+
 type function int
 
 const (

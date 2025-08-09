@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/scanner"
@@ -12,12 +13,18 @@ import (
 
 func main() {
 	args := strings.ToLower(strings.Join(os.Args[1:], "") + ")")
+	args = strings.ReplaceAll(args, ",", ".") // allow for commas :P
+	args = strings.ReplaceAll(args, "x", "*") // Only works because none of the functions contain x
+
+	re := regexp.MustCompile(`(\d)([pe])`)
+	args = re.ReplaceAllString(args, `$1 $2`)
+
 	validate("(" + args)
 	var s scanner.Scanner
 	s.Init(strings.NewReader(args))
 
 	result, _ := parseParens(s)
-	fmt.Printf("result: %f\n", result)
+	fmt.Println(result)
 }
 
 func parseParens(s scanner.Scanner) (float64, scanner.Scanner) {
@@ -26,7 +33,7 @@ func parseParens(s scanner.Scanner) (float64, scanner.Scanner) {
 	var functions []function
 	for tok := s.Scan(); tok != ')'; tok = s.Scan() {
 		token := s.TokenText()
-		fmt.Println(token)
+	readToken:
 		if next != nil || root == nil {
 			// Read Expression
 			var value tree // stores the result of the Expression
@@ -39,8 +46,13 @@ func parseParens(s scanner.Scanner) (float64, scanner.Scanner) {
 				value = literal{v}
 			case !isNumber(token):
 				// Read Function
-				functions = append(functions, readFunction(token))
-				continue
+				constant, ok := constants[token]
+				if ok {
+					value = literal{constant}
+				} else {
+					functions = append(functions, readFunction(token))
+					continue
+				}
 			default:
 				// Read Number
 				v, err := strconv.ParseFloat(token, 64)
@@ -72,7 +84,8 @@ func parseParens(s scanner.Scanner) (float64, scanner.Scanner) {
 			// Read Operator
 			op := readOperator(token)
 			if op < 0 {
-				return math.NaN(), s
+				next = &operation{op: MULT}
+				goto readToken
 			}
 			next = &operation{op: op}
 		}
