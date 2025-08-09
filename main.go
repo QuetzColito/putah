@@ -13,8 +13,9 @@ import (
 
 func main() {
 	args := strings.ToLower(strings.Join(os.Args[1:], "") + ")")
-	args = strings.ReplaceAll(args, ",", ".") // allow for commas :P
-	args = strings.ReplaceAll(args, "x", "*") // Only works because none of the functions contain x
+	args = strings.ReplaceAll(args, ",", ".")  // allow for commas :P
+	args = strings.ReplaceAll(args, "x", "*")  // Only works because none of the functions contain x
+	args = strings.ReplaceAll(args, "**", "^") // Why not
 
 	// Sanitize so go doesnt think 2pi is scientific notation >.>
 	re := regexp.MustCompile(`(\d)([pe])`)
