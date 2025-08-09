@@ -133,7 +133,7 @@ func (f *function) apply(a float64) float64 {
 	case ATAN:
 		return math.Atan(a)
 	case ABS:
-		return math.Asin(a)
+		return math.Abs(a)
 	}
 	return a
 }
